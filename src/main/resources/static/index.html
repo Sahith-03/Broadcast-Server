@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Broadcast Server</title>
+    <style>
+        /* --- General Body Styling --- */
+        body {
+            /* Use a modern, clean font stack */
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            /* A light grey background color is easy on the eyes */
+            background-color: #f0f2f5;
+            /* Center the chat application vertically and horizontally */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+
+        /* --- Main Chat Application Container --- */
+        #chat-app {
+            width: 100%;
+            max-width: 600px; /* Limit width on larger screens */
+            height: 85vh;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column; /* Stack children (title, messages, input) vertically */
+            overflow: hidden; /* Ensures the border-radius clips the children */
+        }
+
+        /* --- Chat Title --- */
+        #chat-app h1 {
+            font-size: 1.25rem;
+            padding: 16px 20px;
+            margin: 0;
+            border-bottom: 1px solid #e0e0e0;
+            color: #1c1e21;
+        }
+
+        /* --- The Message Display Area --- */
+        #message-container {
+            flex-grow: 1; /* This is key: it makes the container take all available vertical space */
+            padding: 20px;
+            overflow-y: auto; /* Adds a scrollbar ONLY when messages overflow the container height */
+            display: flex;
+            flex-direction: column;
+            gap: 12px; /* Adds a nice space between each message */
+        }
+
+        /* --- Styling for Individual Messages --- */
+        /* NOTE: Your script has a small bug: document.createElement("id").
+           This creates a non-standard <id> tag. A <p> tag is more appropriate.
+           This style targets any direct child (*) of the container to work with your current script.
+        */
+        #message-container > * {
+            padding: 10px 15px;
+            background-color: #e4e6eb;
+            border-radius: 18px;
+            color: #050505;
+            max-width: 75%;
+            word-wrap: break-word; /* Prevents long messages from overflowing horizontally */
+            align-self: flex-start; /* Aligns all incoming messages to the left */
+        }
+
+        /* --- The Bottom Input Area --- */
+        #input-area {
+            display: flex; /* Aligns the input box and button side-by-side */
+            padding: 12px;
+            border-top: 1px solid #e0e0e0;
+            background-color: #f7f7f7;
+        }
+
+        /* --- The Text Input Field --- */
+        #msg-input {
+            flex-grow: 1; /* Allows the input to take up the remaining space */
+            border: 1px solid #ccc;
+            border-radius: 20px;
+            padding: 10px 15px;
+            font-size: 1rem;
+            outline: none; /* Removes the default blue glow on focus */
+            margin-right: 10px;
+        }
+
+        #msg-input:focus {
+            border-color: #007bff; /* Adds a highlight when you're typing */
+        }
+
+        /* --- The Submit Button --- */
+        #submit-btn {
+            background-color: #007bff;
+            color: white;
+            border: none;
+            padding: 0 20px; /* Padding left/right */
+            border-radius: 20px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background-color 0.2s ease; /* Smooth hover effect */
+        }
+
+        #submit-btn:hover {
+            background-color: #0056b3; /* Darker blue on hover */
+        }
+
+    </style>
+</head>
+<body>
+
+<!--
+    This HTML is restructured for styling purposes.
+    The message area is on top and the input is on the bottom.
+    All your original IDs are preserved, so your script works perfectly.
+-->
+<div id="chat-app">
+    <h1>Real-Time Broadcast</h1>
+    <div id="message-container">
+        <!-- Messages will be added here by your script -->
+    </div>
+    <div id="input-area">
+        <input type="text" id="msg-input" placeholder="Type a message..."/>
+        <button id="submit-btn">Send</button> <!-- Changed text from "Submit" to "Send" -->
+    </div>
+</div>
+
+<script>
+    const messageContainer = document.getElementById("message-container");
+    const socket = new WebSocket("ws://localhost:8080/broadcast");
+    socket.onmessage = function(e){
+        const message = e.data;
+        // As noted in the CSS, creating an `<id>` element is non-standard.
+        // Using `document.createElement("p")` is the correct approach.
+        const messageElement = document.createElement("id")
+        messageElement.textContent = message
+        console.log(message);
+        messageContainer.appendChild(messageElement);
+
+        // This line correctly scrolls to the bottom to show the newest message.
+        messageContainer.scrollTop = messageContainer.scrollHeight;
+    }
+    const submitBtn = document.getElementById("submit-btn");
+    const msgInput = document.getElementById("msg-input");
+
+    function sendMessage(){
+        console.log(msgInput.value);
+        // Add a check to prevent sending empty messages
+        if (msgInput.value.trim() !== "") {
+            socket.send(msgInput.value);
+            msgInput.value = "";
+        }
+    }
+
+    submitBtn.addEventListener('click',sendMessage);
+
+    // Bonus: Add "Enter" key submission for better user experience
+    msgInput.addEventListener('keyup', function(event) {
+        if (event.key === 'Enter') {
+            sendMessage();
+        }
+    });
+
+</script>
+</body>
+</html>

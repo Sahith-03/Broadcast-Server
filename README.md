@@ -83,6 +83,9 @@ Make sure you have the following installed on your system:
 - **Receiving Messages:** The `socket.onmessage` event listener triggers whenever the server sends a message. It then creates a new HTML element and appends it to the message container.
 - **Sending Messages:** An event listener on the "Send" button calls a function that uses `socket.send()` to transmit the input field's content to the server.
 
+### Project URL 
+https://roadmap.sh/projects/broadcast-server
+
 ## Future Enhancements
 
 This project can be extended with many features. Here are a few ideas:
